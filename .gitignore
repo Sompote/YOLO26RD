@@ -211,3 +211,6 @@ results.csv
 fuzz-sources/
 fuzz-datasets/
 fuzz-models/
+
+# tracked release weights
+!weights/*.pt
