@@ -314,9 +314,9 @@ class Focus(nn.Module):
 class EdgeSPD(nn.Module):
     """Edge-guided space-to-depth downsampling for thin, low-contrast structures.
 
-    A fixed Sobel gradient prior gates the input features toward edge evidence, then a lossless
-    space-to-depth rearrangement (2x downsample) and a fusion convolution replace strided
-    convolution, so hairline structures such as pavement cracks survive downsampling.
+    A fixed Sobel gradient prior gates the input features toward edge evidence, then a lossless space-to-depth
+    rearrangement (2x downsample) and a fusion convolution replace strided convolution, so hairline structures such as
+    pavement cracks survive downsampling.
 
     Attributes:
         gate (nn.Sequential): Learnable 1x1 gate mapping the gradient magnitude to an emphasis map.
@@ -359,10 +359,10 @@ class EdgeSPD(nn.Module):
 class LearnableContrast(nn.Module):
     """Learnable tile-wise contrast adaptation stem for low-contrast imagery.
 
-    A differentiable, end-to-end learnable analogue of CLAHE: the [0, 1] normalized input is
-    divided into a grid of tiles, per-tile per-channel gamma and gain are predicted from local
-    statistics (mean and standard deviation) with cross-tile context, and the parameter maps are
-    bilinearly interpolated back to full resolution so adjacent tiles blend smoothly.
+    A differentiable, end-to-end learnable analog of CLAHE: the [0, 1] normalized input is divided into a grid of
+    tiles, per-tile per-channel gamma and gain are predicted from local statistics (mean and standard deviation) with
+    cross-tile context, and the parameter maps are bilinearly interpolated back to full resolution so adjacent tiles
+    blend smoothly.
 
     Attributes:
         tiles (int): Tile grid size (tiles x tiles), as in CLAHE's tileGridSize.
