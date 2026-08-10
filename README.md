@@ -71,10 +71,7 @@ Trained checkpoints for every scale ship in `weights/` (from-scratch, 640², fit
 | YOLO26-RD-x | `weights/yolo26x-rd.pt` | 164 MB |
 | stock YOLO26-s baseline (recipe-matched) | `weights/yolo26s-base.pt` | 20 MB |
 
-**All weights are stored via [Git LFS](https://git-lfs.com)** — run `git lfs install` before
-cloning (or `git lfs pull` after) to fetch the real files instead of pointer stubs. These
-checkpoints predict the three classes above; for your own classes, train from the YAMLs (below).
-Loading any of them requires this fork (`pip install -e .`), not PyPI ultralytics:
+Loading a checkpoint:
 
 ```python
 from ultralytics import YOLO
