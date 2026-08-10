@@ -62,14 +62,20 @@ YOLO26-RD-x reaches **0.761** test mAP50, above every base-model scale we measur
 Trained checkpoints for every scale ship in `weights/` (from-scratch, 640², fitness-selected
 `best.pt`, 3-class road-damage dataset described above):
 
-| file | model | size |
-|---|---|---|
-| `weights/yolo26n-rd.pt` | YOLO26-RD-n | 6.7 MB |
-| `weights/yolo26s-rd.pt` | YOLO26-RD-s | 25 MB |
-| `weights/yolo26m-rd.pt` | YOLO26-RD-m | 64 MB |
-| `weights/yolo26l-rd.pt` | YOLO26-RD-l | 73 MB |
-| `weights/yolo26x-rd.pt` | YOLO26-RD-x | 164 MB |
-| `weights/yolo26s-base.pt` | stock YOLO26-s baseline (recipe-matched) | 20 MB |
+| model | file | size | download |
+|---|---|---|---|
+| YOLO26-RD-n | `weights/yolo26n-rd.pt` | 6.7 MB | [⬇ yolo26n-rd.pt](https://github.com/Sompote/YOLO26RD/raw/main/weights/yolo26n-rd.pt) |
+| YOLO26-RD-s | `weights/yolo26s-rd.pt` | 25 MB | [⬇ yolo26s-rd.pt](https://github.com/Sompote/YOLO26RD/raw/main/weights/yolo26s-rd.pt) |
+| YOLO26-RD-m | `weights/yolo26m-rd.pt` | 64 MB | [⬇ yolo26m-rd.pt](https://github.com/Sompote/YOLO26RD/raw/main/weights/yolo26m-rd.pt) |
+| YOLO26-RD-l | `weights/yolo26l-rd.pt` | 73 MB | [⬇ yolo26l-rd.pt](https://github.com/Sompote/YOLO26RD/raw/main/weights/yolo26l-rd.pt) |
+| YOLO26-RD-x | `weights/yolo26x-rd.pt` | 164 MB | [⬇ yolo26x-rd.pt](https://github.com/Sompote/YOLO26RD/raw/main/weights/yolo26x-rd.pt) |
+| stock YOLO26-s baseline (recipe-matched) | `weights/yolo26s-base.pt` | 20 MB | [⬇ yolo26s-base.pt](https://github.com/Sompote/YOLO26RD/raw/main/weights/yolo26s-base.pt) |
+
+Direct download without git, e.g.:
+
+```bash
+curl -L -o yolo26s-rd.pt https://github.com/Sompote/YOLO26RD/raw/main/weights/yolo26s-rd.pt
+```
 
 **All weights are stored via [Git LFS](https://git-lfs.com)** — run `git lfs install` before
 cloning (or `git lfs pull` after) to fetch the real files instead of pointer stubs. These
