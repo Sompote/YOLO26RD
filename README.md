@@ -57,6 +57,31 @@ warm-started base model surpasses every from-scratch result here — YOLO26-RD i
 architecture (its custom stem and downsamplers accept only ~39% of stock weights). At larger scale,
 YOLO26-RD-x reaches **0.761** test mAP50, above every base-model scale we measured.
 
+## Pretrained weights (included)
+
+Trained checkpoints for every scale ship in `weights/` (from-scratch, 640², fitness-selected
+`best.pt`, 3-class road-damage dataset described above):
+
+| file | model | size |
+|---|---|---|
+| `weights/yolo26n-rd.pt` | YOLO26-RD-n | 6.7 MB |
+| `weights/yolo26s-rd.pt` | YOLO26-RD-s | 25 MB |
+| `weights/yolo26m-rd.pt` | YOLO26-RD-m | 64 MB |
+| `weights/yolo26l-rd.pt` | YOLO26-RD-l | 73 MB |
+| `weights/yolo26x-rd.pt` | YOLO26-RD-x | 164 MB — **Git LFS** |
+| `weights/yolo26s-base.pt` | stock YOLO26-s baseline (recipe-matched) | 20 MB |
+
+The x checkpoint exceeds GitHub's 100 MB file limit and is stored via [Git LFS](https://git-lfs.com)
+— clone with `git lfs install` first, or download it from the repository's Releases page. These
+checkpoints predict the three classes above; for your own classes, train from the YAMLs (below).
+Loading any of them requires this fork (`pip install -e .`), not PyPI ultralytics:
+
+```python
+from ultralytics import YOLO
+model = YOLO("weights/yolo26s-rd.pt")
+model.predict("road.jpg", conf=0.25)
+```
+
 ## How to use
 
 ### 1. Install
