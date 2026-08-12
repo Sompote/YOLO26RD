@@ -1,0 +1,21 @@
+# TensorRT export dependencies for YOLO26-RD.
+#   pip install -r requirements-tensorrt.txt
+#
+# The version pins are deliberate — each was needed to get export working:
+#
+#   tensorrt-cu12   plain `pip install tensorrt` may resolve to a CUDA 13 build
+#                   (tensorrt_cu13), which fails on a CUDA 12 driver with
+#                   "CUDA driver version is insufficient for CUDA runtime version"
+#                   (cudaError 35). Install the cu12 build explicitly.
+#                   Use tensorrt-cu13 instead if your driver supports CUDA 13.
+#
+#   <11.0           TensorRT 11 removed NetworkDefinitionCreationFlag.EXPLICIT_BATCH,
+#                   which the Ultralytics exporter still uses -> AttributeError.
+#
+#   onnxscript      required by the torch>=2.6 ONNX exporter; without it the
+#                   .pt -> .onnx step fails with ModuleNotFoundError.
+
+onnx>=1.12.0
+onnxslim>=0.1.59
+onnxscript>=0.1.0
+tensorrt-cu12>=10.0,<11.0

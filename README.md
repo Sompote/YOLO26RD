@@ -125,20 +125,121 @@ Notes:
 - Resume with `yolo detect train resume model=.../weights/last.pt` (re-pass `augmentations=`).
 - `best.pt` is selected on val mAP50-95; report it, not per-epoch peaks.
 
-### 4. Validate / test / predict / export
+### 4. Validate / test
 
 ```bash
 yolo detect val model=runs/detect/train/weights/best.pt data=data.yaml imgsz=640            # val
 yolo detect val model=runs/detect/train/weights/best.pt data=data.yaml imgsz=640 split=test # test (report once)
-yolo predict model=runs/detect/train/weights/best.pt source=path/to/images conf=0.25
-yolo export  model=runs/detect/train/weights/best.pt format=onnx imgsz=640
 ```
 
 Always evaluate at the training `imgsz` (evaluating a 640-trained model at 800/960 *reduces*
 accuracy on this data). Test-time augmentation (`augment=True`) is a no-op for NMS-free `end2end`
 models. Exported models need no NMS post-processing.
 
-### Recommended recipe (evidence-based)
+### 5. Inference
+
+```bash
+# CLI
+yolo predict model=weights/best.pt source=path/to/images conf=0.25
+
+# helper script — prints per-image detections and the speed breakdown
+python predict_trt.py weights/best.pt path/to/images --conf 0.25 --save
+```
+
+Python API:
+
+```python
+from ultralytics import YOLO
+
+model = YOLO("weights/best.pt")                  # or "weights/best.engine"
+results = model.predict("image.jpg", imgsz=640, conf=0.25, device=0)
+
+for r in results:
+    for b in r.boxes:
+        name = r.names[int(b.cls)]               # 'alligator crack' | 'crack' | 'patching'
+        conf = float(b.conf)
+        x1, y1, x2, y2 = b.xyxy[0].tolist()      # pixels in the ORIGINAL image, not 640x640
+        print(name, round(conf, 2), (x1, y1, x2, y2))
+```
+
+`source=` accepts an image, folder, glob, video, URL, or webcam index. Add `save=True` for
+annotated output, `save_txt=True` for YOLO-format labels. For long videos or large folders use
+`stream=True` to iterate lazily instead of building all results in memory.
+
+### 6. Export to TensorRT (FP16)
+
+TensorRT gives roughly an **8-11x** speedup over eager PyTorch on the same GPU.
+
+```bash
+pip install -r requirements-tensorrt.txt
+
+python export_tensorrt.py weights/best.pt                     # FP16, imgsz 640, batch 1
+python export_tensorrt.py weights/best.pt --imgsz 640 --batch 8
+python export_tensorrt.py weights/best.pt --int8 --data data.yaml
+```
+
+Equivalent one-liners:
+
+```python
+from ultralytics import YOLO
+YOLO("weights/best.pt").export(format="engine", half=True, imgsz=640, device=0)
+```
+```bash
+yolo export model=weights/best.pt format=engine half=True imgsz=640 device=0
+```
+
+Then run it exactly like a `.pt`:
+
+```bash
+python predict_trt.py weights/best.engine path/to/images
+```
+
+Export goes `.pt -> .onnx -> .engine` and takes ~40-60 s; the intermediate `.onnx` can be deleted.
+
+**Four things to know about engines:**
+
+1. **`task="detect"` is required** when loading an `.engine` in the Python API — a serialized
+   engine carries no task metadata, so Ultralytics cannot infer it:
+   ```python
+   YOLO("best.engine", task="detect")
+   ```
+2. **`imgsz` and `batch` are baked in at build time.** Build separate engines if you need more
+   than one input size or batch size.
+3. **Engines are not portable.** They are compiled for the specific GPU architecture, TensorRT
+   version and CUDA version used at build time. Re-export from the `.pt` on each target machine.
+4. **Discard the first inference when timing** — the first call pays a one-off warmup cost
+   (roughly 25 ms vs ~2 ms settled).
+
+#### Measured TensorRT FP16 latency
+
+640x640, batch 1, RTX 5090, TensorRT 10.16, released YOLO26-RD weights:
+
+| model | params | preprocess | inference | postprocess | total | FPS |
+|---|---:|---:|---:|---:|---:|---:|
+| YOLO26-RD-n | 3.00M | 2.20 | 1.50 | 0.45 | 4.16 | 241 |
+| YOLO26-RD-s | 11.93M | 2.24 | 1.64 | 0.36 | 4.24 | 236 |
+| YOLO26-RD-m | 30.18M | 2.12 | 1.89 | 0.44 | 4.45 | 225 |
+| YOLO26-RD-l | 34.78M | 2.17 | 2.64 | 0.35 | 5.16 | 194 |
+| YOLO26-RD-x | 78.17M | 2.14 | 3.31 | 0.45 | 5.90 | 170 |
+
+*(ms; stock YOLO26-s for reference: 1.22 ms inference)*
+
+Two practical notes. **Postprocessing is only 0.35-0.45 ms** because the `end2end` head needs no
+NMS. And **preprocessing costs more than inference** for every scale up to `m` — that is resizing
+full-resolution source imagery down to 640, so feeding pre-resized 640x640 images is a larger win
+than switching to a smaller model.
+
+#### Export troubleshooting
+
+| symptom | cause and fix |
+|---|---|
+| `CUDA driver version is insufficient for CUDA runtime version` (error 35) | `pip install tensorrt` resolved to a CUDA 13 build. Install `tensorrt-cu12` explicitly (or `tensorrt-cu13` if your driver supports CUDA 13). |
+| `AttributeError: ... has no attribute 'EXPLICIT_BATCH'` | TensorRT 11 removed that flag. Pin `tensorrt-cu12>=10.0,<11.0`. |
+| `ModuleNotFoundError: No module named 'onnxscript'` | The torch>=2.6 ONNX exporter needs it: `pip install onnxscript`. |
+| `WARNING: ... requires precision-lose casting` | Harmless — TensorRT noting an FP16 cast, expected with `half=True`. |
+| Engine fails to load on another machine | Engines are hardware/version specific. Re-export from the `.pt` there. |
+
+### 7. Recommended recipe (evidence-based)
 
 - `mosaic=0.5` with a generous `close_mosaic` — full mosaic truncates near-frame-size distress
   boxes and degraded long runs in our experiments.
