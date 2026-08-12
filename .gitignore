@@ -214,3 +214,6 @@ fuzz-models/
 
 # tracked release weights
 !weights/*.pt
+
+# README result figures
+!assets/*.png

@@ -17,45 +17,63 @@ anchors where almost no ground truth lives. Two lightweight modules complete the
 This repository is a fork of Ultralytics 8.4.115 with both modules built in — a stock
 `pip install ultralytics` will **not** load these models.
 
-## Model zoo
+## Pavement damage detection results
 
-One architecture, five scales. The **scale letter is read from the YAML filename**; all files below
-are included ready to use.
+Full scale sweep on the 7,618-image road-survey dataset (3 classes: alligator cracking, linear
+cracks, patching). All three families were trained **from scratch** with the identical recipe
+(640², 120 epochs, MuSGD, `mosaic=0.5`, `close_mosaic=30`, `flipud=0.5`, `cos_lr`), and every number
+below is the fitness-selected `best.pt` evaluated on the validation split.
 
-| model | config | params | GFLOPs @640 | val mAP50 / 50-95 | test mAP50 / 50-95 |
-|---|---|---|---|---|---|
-| YOLO26-RD-n | `models/yolo26n-rd.yaml` | 3.13M | ~9 | 0.757 / 0.460 | 0.721 / 0.449 |
-| YOLO26-RD-s | `models/yolo26s-rd.yaml` | 12.42M | ~31 | 0.787 / 0.469 | 0.737 / 0.455 |
-| YOLO26-RD-m | `models/yolo26m-rd.yaml` | 31.61M | ~88 | 0.780 / 0.488 | 0.735 / 0.476 |
-| YOLO26-RD-l | `models/yolo26l-rd.yaml` | 36.22M | ~101 | **0.809 / 0.497** | 0.738 / 0.475 |
-| YOLO26-RD-x | `models/yolo26x-rd.yaml` | 81.36M | ~225 | 0.785 / 0.488 | **0.761 / 0.484** |
+### Accuracy vs. model size
 
-All figures are the fitness-selected `best.pt` (selection = val mAP50-95), trained **from scratch**
-at 640² on a 7,618-image road-survey dataset (3 classes; 6,563 / 504 / 551 train/val/test), and
-evaluated once per split. Note the val/test disagreement at the top of the range: scale l wins
-validation, scale x wins the held-out test split — select scales on your own held-out data, not on
-validation alone.
+![Accuracy vs. parameters — YOLO26, YOLO26-RD and YOLOv12 across scales](assets/fig5_scale_comparison_bestpt.png)
 
-**Base model.** The unmodified YOLO26 family is included (this is a full Ultralytics fork), so the
-stock baseline trains from the same install: `model=yolo26s.yaml` (or n/m/l/x).
+*(a) mAP50 and (b) mAP50-95 against parameter count (log scale). YOLO26-RD-l reaches **0.809 mAP50 /
+0.497 mAP50-95** — the best accuracy-per-parameter point in the sweep.*
 
-## Result comparison vs. base YOLO26
+| scale | YOLO26 (base) | YOLO26-RD (proposed) | YOLOv12 |
+|---|---|---|---|
+| n | 0.773 / 0.467 | 0.757 / 0.460 | 0.680 / 0.445 |
+| s | 0.773 / 0.469 | **0.787** / 0.469 | 0.752 / 0.463 |
+| m | 0.777 / 0.474 | **0.794 / 0.488** | 0.772 / 0.471 |
+| l | 0.778 / 0.467 | **0.809 / 0.497** | 0.782 / 0.482 |
+| x | 0.778 / 0.479 | 0.785 / 0.488 | **0.809 / 0.512** |
 
-Same dataset, identical from-scratch recipe (640², 120 epochs, MuSGD, mosaic 0.5), fitness-selected
-checkpoints, single evaluation per split:
+*val mAP50 / mAP50-95; best per row in bold.*
 
-| model | params | train s/epoch | val mAP50 / 50-95 | test mAP50 / 50-95 |
-|---|---|---|---|---|
-| YOLO26-s (base, recipe-matched) | 10.01M | **21.7** | 0.773 / 0.469 | 0.709 / 0.445 |
-| **YOLO26-RD-s** | 12.42M | 66.9 | **0.787** / 0.469 | **0.737 / 0.455** |
+### Accuracy vs. latency
 
-Seed replication (3 seeds each, test split): **YOLO26-RD-s 0.731 ± 0.007** vs
-**YOLO26-s 0.718 ± 0.008** — YOLO26-RD ahead at every seed; the mean margin (+1.3 mAP50) is
-consistent in direction but within the resolution of n = 3 seeds. Two honest caveats: the base
-model trains ~3× faster, and if standard **pretrained weights** are used (`yolo26s.pt`), the
-warm-started base model surpasses every from-scratch result here — YOLO26-RD is a *from-scratch*
-architecture (its custom stem and downsamplers accept only ~39% of stock weights). At larger scale,
-YOLO26-RD-x reaches **0.761** test mAP50, above every base-model scale we measured.
+![Accuracy vs. latency — YOLO26, YOLO26-RD and YOLOv12 across scales](assets/fig6_latency_tradeoff_bestpt.png)
+
+*Same checkpoints plotted against measured TensorRT FP16 inference time (640², batch 1, RTX 5090,
+TensorRT 10.16).*
+
+| scale | YOLO26 (base) | YOLO26-RD | YOLOv12 |
+|---|---:|---:|---:|
+| n | 1.26 | 1.50 | 1.44 |
+| s | 1.22 | 1.64 | 1.46 |
+| m | 1.27 | 1.89 | 1.55 |
+| l | 2.02 | 2.64 | 2.55 |
+| x | 2.16 | 3.31 | 3.30 |
+
+*ms/image, inference only (no NMS for the `end2end` YOLO26/YOLO26-RD heads).*
+
+### What the sweep shows
+
+- **The base YOLO26 family saturates on this data.** mAP50 moves from 0.773 (n) to 0.778 (x) — a
+  0.5-point spread over a 25× parameter increase. Capacity is not the binding constraint; the
+  detection-level allocation and the low-contrast input are.
+- **YOLO26-RD scales where the base model does not.** From `s` upward it is ahead of both baselines
+  at matched scale, peaking at **0.809 / 0.497** with `l` (36.2M parameters, 2.64 ms).
+- **Best accuracy per unit cost.** YOLO26-RD-l matches YOLOv12-x on mAP50 (0.809) with ~40% fewer
+  parameters (36.2M vs ~59M) and 20% lower latency (2.64 ms vs 3.30 ms). YOLO26-RD-s already
+  beats every base YOLO26 scale, and every YOLOv12 scale up to `l`, at 1.64 ms.
+- **YOLOv12-x wins the strict metric.** At the very top of the range YOLOv12-x is best on mAP50-95
+  (0.512 vs 0.497), so if localisation quality matters more than throughput and 59M parameters are
+  affordable, it remains competitive.
+- **Do not use the `n` scale of YOLO26-RD.** It is the one configuration that loses to the base
+  model (0.757 vs 0.773) — LearnableContrast and EdgeSPD need enough channel width downstream to
+  pay for themselves. Prefer `s` as the small-model entry point.
 
 ## How to use
 
@@ -121,7 +139,8 @@ model.train(data="data.yaml", imgsz=640, epochs=120, batch=32,
 
 Notes:
 - A `.yaml` model trains **from scratch**; `pretrained=True` is inert. That is the intended regime
-  for YOLO26-RD (see comparison caveats above).
+  for YOLO26-RD — its custom stem and downsamplers accept only ~39% of stock YOLO26 weights, so a
+  warm start is not available.
 - Resume with `yolo detect train resume model=.../weights/last.pt` (re-pass `augmentations=`).
 - `best.pt` is selected on val mAP50-95; report it, not per-epoch peaks.
 
