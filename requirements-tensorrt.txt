@@ -18,4 +18,4 @@
 onnx>=1.12.0
 onnxslim>=0.1.59
 onnxscript>=0.1.0
-tensorrt-cu12>=10.0,<11.0
+tensorrt-cu12>=11.2.1.2,<12.0
