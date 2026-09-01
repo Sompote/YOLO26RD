@@ -49,16 +49,14 @@ def main():
         print(f"{Path(r.path).name}: {len(r.boxes)} detection(s)")
         for b in r.boxes:
             x1, y1, x2, y2 = (round(v) for v in b.xyxy[0].tolist())
-            print(f"    {r.names[int(b.cls)]:<16} conf={float(b.conf):.2f}  "
-                  f"box=({x1},{y1})-({x2},{y2})")
+            print(f"    {r.names[int(b.cls)]:<16} conf={float(b.conf):.2f}  box=({x1},{y1})-({x2},{y2})")
     if len(results) > args.show_n:
         print(f"... {len(results) - args.show_n} more")
 
     total = sum(len(r.boxes) for r in results)
     s = results[-1].speed
     print(f"\ntotal detections : {total}")
-    print(f"speed (last)     : {s['preprocess']:.1f} pre + {s['inference']:.1f} infer"
-          f" + {s['postprocess']:.1f} post ms")
+    print(f"speed (last)     : {s['preprocess']:.1f} pre + {s['inference']:.1f} infer + {s['postprocess']:.1f} post ms")
     if args.save or args.save_txt:
         print(f"saved to         : {results[0].save_dir}")
 

@@ -8,7 +8,7 @@ YOLO26-RD keeps the high-resolution P2/4 branch as a **feature** path fused into
 ~1.4% of instances are COCO-small at 640², so a stride-4 detection level would spend 75% of all
 anchors where almost no ground truth lives. Two lightweight modules complete the design:
 
-- **LearnableContrast** (494 parameters) — a differentiable, per-tile analogue of CLAHE: local
+- **LearnableContrast** (494 parameters) — a differentiable, per-tile analog of CLAHE: local
   gamma/gain predicted from tile statistics, bilinearly blended, zero-initialized to identity,
   active at inference.
 - **EdgeSPD** (+2 parameters over SPD-Conv) — Sobel-gated lossless space-to-depth downsampling at
@@ -28,35 +28,35 @@ below is the fitness-selected `best.pt` evaluated on the validation split.
 
 ![Accuracy vs. parameters — YOLO26, YOLO26-RD and YOLOv12 across scales](assets/fig5_scale_comparison_bestpt.png)
 
-*(a) mAP50 and (b) mAP50-95 against parameter count (log scale). YOLO26-RD-l reaches **0.809 mAP50 /
-0.497 mAP50-95** — the best accuracy-per-parameter point in the sweep.*
+_(a) mAP50 and (b) mAP50-95 against parameter count (log scale). YOLO26-RD-l reaches **0.809 mAP50 /
+0.497 mAP50-95** — the best accuracy-per-parameter point in the sweep._
 
-| scale | YOLO26 (base) | YOLO26-RD (proposed) | YOLOv12 |
-|---|---|---|---|
-| n | 0.773 / 0.467 | 0.757 / 0.460 | 0.680 / 0.445 |
-| s | 0.773 / 0.469 | **0.787** / 0.469 | 0.752 / 0.463 |
-| m | 0.777 / 0.474 | **0.794 / 0.488** | 0.772 / 0.471 |
-| l | 0.778 / 0.467 | **0.809 / 0.497** | 0.782 / 0.482 |
-| x | 0.778 / 0.479 | 0.785 / 0.488 | **0.809 / 0.512** |
+| scale | YOLO26 (base) | YOLO26-RD (proposed) | YOLOv12           |
+| ----- | ------------- | -------------------- | ----------------- |
+| n     | 0.773 / 0.467 | 0.757 / 0.460        | 0.680 / 0.445     |
+| s     | 0.773 / 0.469 | **0.787** / 0.469    | 0.752 / 0.463     |
+| m     | 0.777 / 0.474 | **0.794 / 0.488**    | 0.772 / 0.471     |
+| l     | 0.778 / 0.467 | **0.809 / 0.497**    | 0.782 / 0.482     |
+| x     | 0.778 / 0.479 | 0.785 / 0.488        | **0.809 / 0.512** |
 
-*val mAP50 / mAP50-95; best per row in bold.*
+_val mAP50 / mAP50-95; best per row in bold._
 
 ### Accuracy vs. latency
 
 ![Accuracy vs. latency — YOLO26, YOLO26-RD and YOLOv12 across scales](assets/fig6_latency_tradeoff_bestpt.png)
 
-*Same checkpoints plotted against measured TensorRT FP16 inference time (640², batch 1, RTX 5090,
-TensorRT 10.16).*
+_Same checkpoints plotted against measured TensorRT FP16 inference time (640², batch 1, RTX 5090,
+TensorRT 10.16)._
 
 | scale | YOLO26 (base) | YOLO26-RD | YOLOv12 |
-|---|---:|---:|---:|
-| n | 1.26 | 1.50 | 1.44 |
-| s | 1.22 | 1.64 | 1.46 |
-| m | 1.27 | 1.89 | 1.55 |
-| l | 2.02 | 2.64 | 2.55 |
-| x | 2.16 | 3.31 | 3.30 |
+| ----- | ------------: | --------: | ------: |
+| n     |          1.26 |      1.50 |    1.44 |
+| s     |          1.22 |      1.64 |    1.46 |
+| m     |          1.27 |      1.89 |    1.55 |
+| l     |          2.02 |      2.64 |    2.55 |
+| x     |          2.16 |      3.31 |    3.30 |
 
-*ms/image, inference only (no NMS for the `end2end` YOLO26/YOLO26-RD heads).*
+_ms/image, inference only (no NMS for the `end2end` YOLO26/YOLO26-RD heads)._
 
 ### What the sweep shows
 
@@ -69,7 +69,7 @@ TensorRT 10.16).*
   parameters (36.2M vs ~59M) and 20% lower latency (2.64 ms vs 3.30 ms). YOLO26-RD-s already
   beats every base YOLO26 scale, and every YOLOv12 scale up to `l`, at 1.64 ms.
 - **YOLOv12-x wins the strict metric.** At the very top of the range YOLOv12-x is best on mAP50-95
-  (0.512 vs 0.497), so if localisation quality matters more than throughput and 59M parameters are
+  (0.512 vs 0.497), so if localization quality matters more than throughput and 59M parameters are
   affordable, it remains competitive.
 - **Do not use the `n` scale of YOLO26-RD.** It is the one configuration that loses to the base
   model (0.757 vs 0.773) — LearnableContrast and EdgeSPD need enough channel width downstream to
@@ -96,7 +96,7 @@ train: train/images
 val: valid/images
 test: test/images
 nc: 3
-names: ['alligator crack', 'crack', 'patching']
+names: ["alligator crack", "crack", "patching"]
 ```
 
 Edit `nc`/`names` for your classes; labels are normalized `class cx cy w h` lines in `*/labels/`.
@@ -109,35 +109,45 @@ accumulation — do not "normalize" them across scales):
 ```bash
 # n / s (batch 32)
 yolo detect train model=models/yolo26s-rd.yaml data=data.yaml \
-     imgsz=640 epochs=120 batch=32 mosaic=0.5 close_mosaic=30 flipud=0.5 cos_lr=True
+  imgsz=640 epochs=120 batch=32 mosaic=0.5 close_mosaic=30 flipud=0.5 cos_lr=True
 
 # m / l (batch 16)
 yolo detect train model=models/yolo26l-rd.yaml data=data.yaml \
-     imgsz=640 epochs=120 batch=16 mosaic=0.5 close_mosaic=30 flipud=0.5 cos_lr=True
+  imgsz=640 epochs=120 batch=16 mosaic=0.5 close_mosaic=30 flipud=0.5 cos_lr=True
 
 # x (batch 8)
 yolo detect train model=models/yolo26x-rd.yaml data=data.yaml \
-     imgsz=640 epochs=120 batch=8 mosaic=0.5 close_mosaic=30 flipud=0.5 cos_lr=True
+  imgsz=640 epochs=120 batch=8 mosaic=0.5 close_mosaic=30 flipud=0.5 cos_lr=True
 
 # base-model comparison run (stock YOLO26, same recipe)
 yolo detect train model=yolo26s.yaml data=data.yaml \
-     imgsz=640 epochs=120 batch=32 mosaic=0.5 close_mosaic=30 flipud=0.5 cos_lr=True
+  imgsz=640 epochs=120 batch=32 mosaic=0.5 close_mosaic=30 flipud=0.5 cos_lr=True
 ```
 
 Python API — recommended for top-down road imagery, where exact 90° rotation is label-preserving
 and was the largest single gain we measured (+3.7 test mAP50 on the base model):
 
 ```python
-import albumentations as A            # pip install albumentations
+import albumentations as A  # pip install albumentations
+
 from ultralytics import YOLO
 
 model = YOLO("models/yolo26s-rd.yaml")
-model.train(data="data.yaml", imgsz=640, epochs=120, batch=32,
-            mosaic=0.5, close_mosaic=30, flipud=0.5, cos_lr=True,
-            augmentations=[A.RandomRotate90(p=0.5)])
+model.train(
+    data="data.yaml",
+    imgsz=640,
+    epochs=120,
+    batch=32,
+    mosaic=0.5,
+    close_mosaic=30,
+    flipud=0.5,
+    cos_lr=True,
+    augmentations=[A.RandomRotate90(p=0.5)],
+)
 ```
 
 Notes:
+
 - A `.yaml` model trains **from scratch**; `pretrained=True` is inert. That is the intended regime
   for YOLO26-RD — its custom stem and downsamplers accept only ~39% of stock YOLO26 weights, so a
   warm start is not available.
@@ -151,7 +161,7 @@ yolo detect val model=runs/detect/train/weights/best.pt data=data.yaml imgsz=640
 yolo detect val model=runs/detect/train/weights/best.pt data=data.yaml imgsz=640 split=test # test (report once)
 ```
 
-Always evaluate at the training `imgsz` (evaluating a 640-trained model at 800/960 *reduces*
+Always evaluate at the training `imgsz` (evaluating a 640-trained model at 800/960 _reduces_
 accuracy on this data). Test-time augmentation (`augment=True`) is a no-op for NMS-free `end2end`
 models. Exported models need no NMS post-processing.
 
@@ -170,14 +180,14 @@ Python API:
 ```python
 from ultralytics import YOLO
 
-model = YOLO("weights/best.pt")                  # or "weights/best.engine"
+model = YOLO("weights/best.pt")  # or "weights/best.engine"
 results = model.predict("image.jpg", imgsz=640, conf=0.25, device=0)
 
 for r in results:
     for b in r.boxes:
-        name = r.names[int(b.cls)]               # 'alligator crack' | 'crack' | 'patching'
+        name = r.names[int(b.cls)]  # 'alligator crack' | 'crack' | 'patching'
         conf = float(b.conf)
-        x1, y1, x2, y2 = b.xyxy[0].tolist()      # pixels in the ORIGINAL image, not 640x640
+        x1, y1, x2, y2 = b.xyxy[0].tolist()  # pixels in the ORIGINAL image, not 640x640
         print(name, round(conf, 2), (x1, y1, x2, y2))
 ```
 
@@ -192,7 +202,7 @@ TensorRT gives roughly an **8-11x** speedup over eager PyTorch on the same GPU.
 ```bash
 pip install -r requirements-tensorrt.txt
 
-python export_tensorrt.py weights/best.pt                     # FP16, imgsz 640, batch 1
+python export_tensorrt.py weights/best.pt # FP16, imgsz 640, batch 1
 python export_tensorrt.py weights/best.pt --imgsz 640 --batch 8
 python export_tensorrt.py weights/best.pt --int8 --data data.yaml
 ```
@@ -201,8 +211,10 @@ Equivalent one-liners:
 
 ```python
 from ultralytics import YOLO
+
 YOLO("weights/best.pt").export(format="engine", half=True, imgsz=640, device=0)
 ```
+
 ```bash
 yolo export model=weights/best.pt format=engine half=True imgsz=640 device=0
 ```
@@ -233,15 +245,15 @@ Export goes `.pt -> .onnx -> .engine` and takes ~40-60 s; the intermediate `.onn
 
 640x640, batch 1, RTX 5090, TensorRT 10.16, released YOLO26-RD weights:
 
-| model | params | preprocess | inference | postprocess | total | FPS |
-|---|---:|---:|---:|---:|---:|---:|
-| YOLO26-RD-n | 3.00M | 2.20 | 1.50 | 0.45 | 4.16 | 241 |
-| YOLO26-RD-s | 11.93M | 2.24 | 1.64 | 0.36 | 4.24 | 236 |
-| YOLO26-RD-m | 30.18M | 2.12 | 1.89 | 0.44 | 4.45 | 225 |
-| YOLO26-RD-l | 34.78M | 2.17 | 2.64 | 0.35 | 5.16 | 194 |
-| YOLO26-RD-x | 78.17M | 2.14 | 3.31 | 0.45 | 5.90 | 170 |
+| model       | params | preprocess | inference | postprocess | total | FPS |
+| ----------- | -----: | ---------: | --------: | ----------: | ----: | --: |
+| YOLO26-RD-n |  3.00M |       2.20 |      1.50 |        0.45 |  4.16 | 241 |
+| YOLO26-RD-s | 11.93M |       2.24 |      1.64 |        0.36 |  4.24 | 236 |
+| YOLO26-RD-m | 30.18M |       2.12 |      1.89 |        0.44 |  4.45 | 225 |
+| YOLO26-RD-l | 34.78M |       2.17 |      2.64 |        0.35 |  5.16 | 194 |
+| YOLO26-RD-x | 78.17M |       2.14 |      3.31 |        0.45 |  5.90 | 170 |
 
-*(ms; stock YOLO26-s for reference: 1.22 ms inference)*
+_(ms; stock YOLO26-s for reference: 1.22 ms inference)_
 
 Two practical notes. **Postprocessing is only 0.35-0.45 ms** because the `end2end` head needs no
 NMS. And **preprocessing costs more than inference** for every scale up to `m` — that is resizing
@@ -250,13 +262,13 @@ than switching to a smaller model.
 
 #### Export troubleshooting
 
-| symptom | cause and fix |
-|---|---|
+| symptom                                                                   | cause and fix                                                                                                                                |
+| ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
 | `CUDA driver version is insufficient for CUDA runtime version` (error 35) | `pip install tensorrt` resolved to a CUDA 13 build. Install `tensorrt-cu12` explicitly (or `tensorrt-cu13` if your driver supports CUDA 13). |
-| `AttributeError: ... has no attribute 'EXPLICIT_BATCH'` | TensorRT 11 removed that flag. Pin `tensorrt-cu12>=10.0,<11.0`. |
-| `ModuleNotFoundError: No module named 'onnxscript'` | The torch>=2.6 ONNX exporter needs it: `pip install onnxscript`. |
-| `WARNING: ... requires precision-lose casting` | Harmless — TensorRT noting an FP16 cast, expected with `half=True`. |
-| Engine fails to load on another machine | Engines are hardware/version specific. Re-export from the `.pt` there. |
+| `AttributeError: ... has no attribute 'EXPLICIT_BATCH'`                   | TensorRT 11 removed that flag. Pin `tensorrt-cu12>=10.0,<11.0`.                                                                              |
+| `ModuleNotFoundError: No module named 'onnxscript'`                       | The torch>=2.6 ONNX exporter needs it: `pip install onnxscript`.                                                                             |
+| `WARNING: ... requires precision-lose casting`                            | Harmless — TensorRT noting an FP16 cast, expected with `half=True`.                                                                          |
+| Engine fails to load on another machine                                   | Engines are hardware/version specific. Re-export from the `.pt` there.                                                                       |
 
 ### 7. Recommended recipe (evidence-based)
 
@@ -273,8 +285,8 @@ than switching to a smaller model.
 Both modules are registered in `ultralytics/nn/tasks.py` and usable in any model YAML:
 
 ```yaml
-- [-1, 1, LearnableContrast, [3]]   # input stem; args: [channels, hidden_width, tile_grid]
-- [-1, 1, EdgeSPD, [256, 3]]        # lossless downsample /2; args: [out_channels, fusion_kernel]
+- [-1, 1, LearnableContrast, [3]] # input stem; args: [channels, hidden_width, tile_grid]
+- [-1, 1, EdgeSPD, [256, 3]] # lossless downsample /2; args: [out_channels, fusion_kernel]
 ```
 
 Implementation: `ultralytics/nn/modules/conv.py` (`EdgeSPD`, `LearnableContrast`).
