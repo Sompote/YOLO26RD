@@ -34,8 +34,7 @@ def main():
     try:
         import tensorrt  # noqa: F401
     except ImportError:
-        sys.exit("TensorRT not installed. Run:\n"
-                 '  pip install onnx onnxslim onnxscript "tensorrt-cu12>=10.0,<11.0"')
+        sys.exit('TensorRT not installed. Run:\n  pip install onnx onnxslim onnxscript "tensorrt-cu12>=10.0,<11.0"')
 
     from ultralytics import YOLO
 
@@ -44,10 +43,9 @@ def main():
         sys.exit(f"not found: {pt}")
 
     print(f"converting : {pt}")
-    print(f"imgsz={args.imgsz}  batch={args.batch}  "
-          f"precision={'INT8' if args.int8 else 'FP16'}\n")
+    print(f"imgsz={args.imgsz}  batch={args.batch}  precision={'INT8' if args.int8 else 'FP16'}\n")
 
-    kw = dict(format="engine", imgsz=args.imgsz, batch=args.batch, device=args.device)
+    kw = {"format": "engine", "imgsz": args.imgsz, "batch": args.batch, "device": args.device}
     if args.int8:
         kw.update(int8=True, data=args.data)
     else:
@@ -63,7 +61,7 @@ def main():
     print(f"build  : {dt:.0f} s")
 
     if not args.no_verify:
-        m = YOLO(str(eng), task="detect")          # task= is REQUIRED for .engine
+        m = YOLO(str(eng), task="detect")  # task= is REQUIRED for .engine
         print(f"verify : loaded OK ({len(m.names)} classes)")
 
     print(f"\nrun it with:\n  python predict_trt.py {eng} <image-or-folder>")
