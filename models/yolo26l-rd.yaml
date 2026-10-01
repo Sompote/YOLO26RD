@@ -4,7 +4,7 @@
 # Novel contributions over stock YOLO26 (and over v7):
 #   0. LearnableContrast stem: tile-wise (8x8 grid) per-channel adaptive gamma/gain predicted
 #      from local statistics with cross-tile context and bilinear blending — a differentiable,
-#      end-to-end learnable CLAHE analogue (local contrast adaptation inside the network).
+#      end-to-end learnable CLAHE analog (local contrast adaptation inside the network).
 #   1. EdgeSPD: Sobel-prior edge-gated space-to-depth downsampling at P2->P3 and P3->P4 —
 #      lossless downsampling steered toward crack edges (named module, ablatable).
 #   2. A2C2f area attention (backbone P4 + head P3): long-range context along elongated cracks.

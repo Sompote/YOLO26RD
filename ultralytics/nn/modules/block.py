@@ -2078,10 +2078,9 @@ class RealNVP(nn.Module):
 class StripC3k2(C3k2):
     """C3k2 followed by zero-initialized directional strip context.
 
-    Adds depthwise 1xk and kx1 convolutions on the block output, blended through a
-    zero-initialized scalar gate, so the module is exactly C3k2 at initialization.
-    Motivated by axis-aligned elongated pavement cracks (CCNet / strip-pooling literature):
-    a pixel on a crack gains evidence from its full row/column, which square kernels dilute.
+    Adds depthwise 1xk and kx1 convolutions on the block output, blended through a zero-initialized scalar gate, so the
+    module is exactly C3k2 at initialization. Motivated by axis-aligned elongated pavement cracks (CCNet / strip-pooling
+    literature): a pixel on a crack gains evidence from its full row/column, which square kernels dilute.
     """
 
     def __init__(self, c1, c2, n=1, c3k=False, e=0.5, attn=False, g=1, shortcut=True, k=9):
